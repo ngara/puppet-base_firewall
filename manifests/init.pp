@@ -94,30 +94,21 @@
 # Andrew Kroh
 #
 class base_firewall(
-  $allow_new_outgoing_ipv4 = false,
-  $allow_new_outgoing_ipv6 = false,
-  $manage_sshd_firewall    = true,
-  $sshd_port               = 22,
-  $purge                   = true,
-  $chain_policy            = 'drop',
-  $chain_purge             = false,
-  $manage_logging          = false,
+  Boolean $allow_new_outgoing_ipv4 = false,
+  Boolean $allow_new_outgoing_ipv6 = false,
+  Boolean $manage_sshd_firewall    = true,
+  Integer $sshd_port               = 22,
+  Boolean $purge                   = true,
+  Pattern[/^accept$/, /^drop$/] $chain_policy            = 'drop',
+  Boolean $chain_purge             = false,
+  Boolean $manage_logging          = false,
 ) {
 
   #------------------------ Validation ----------------------------------------
 
-  validate_bool($allow_new_outgoing_ipv4)
-  validate_bool($allow_new_outgoing_ipv6)
-  validate_bool($manage_sshd_firewall)
-
-  if !is_integer($sshd_port) or $sshd_port < 1 or $sshd_port > 65535 {
+  if $sshd_port < 1 or $sshd_port > 65535 {
     fail('sshd_port must be an integer between [1, 65535].')
   }
-
-  validate_bool($purge)
-  validate_re($chain_policy, ['^accept$', '^drop$'])
-  validate_bool($chain_purge)
-  validate_bool($manage_logging)
 
   if $purge and $chain_purge {
     fail('purge and chain_purge and mutually exclusive. Set only one to true.')
