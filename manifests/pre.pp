@@ -218,13 +218,14 @@ class base_firewall::pre (
     proto  => 'all',
     state  => ['RELATED', 'ESTABLISHED'],
     action => 'accept',
-  }->
-
-  firewall { '008 allow incoming icmp echo-requests IPv6':
+  }
+  /*
+  -> firewall { '008 allow incoming icmp echo-requests IPv6':
     proto  => 'ipv6-icmp',
     icmp   => 'echo-request',
     action => 'accept',
   }
+  */
 
   if $manage_sshd_firewall {
     firewall { '020 allow incoming ssh IPv6':
