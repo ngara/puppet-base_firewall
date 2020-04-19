@@ -129,7 +129,16 @@ class base_firewall(
   # automatically merged.
   $ignores = hiera_array('base_firewall::ignores', [])
 
-  class { 'base_firewall::pre_ipv4':
+  # Include the pre/post rules and ensure that the pre
+  # rules always run before the post rules to prevent
+  # us from being locked out of the system.
+  Firewall {
+    before  => Class['base_firewall::post'],
+    require => Class['base_firewall::pre'],
+  }
+
+
+  class { 'base_firewall::pre':
     allow_new_outgoing   => $allow_new_outgoing_ipv4,
     manage_sshd_firewall => $manage_sshd_firewall,
     sshd_port            => $sshd_port,
@@ -138,31 +147,8 @@ class base_firewall(
     chain_purge_ignore   => $ignores,
   }
 
-  class { 'base_firewall::post_ipv4':
+  class { 'base_firewall::post':
     chain_policy => $chain_policy,
-  }
-
-  class { 'base_firewall::pre_ipv6':
-    allow_new_outgoing   => $allow_new_outgoing_ipv6,
-    manage_sshd_firewall => $manage_sshd_firewall,
-    sshd_port            => $sshd_port,
-    chain_policy         => $chain_policy,
-    chain_purge          => $chain_purge,
-    chain_purge_ignore   => $ignores,
-  }
-
-  class { 'base_firewall::post_ipv6':
-    chain_policy => $chain_policy,
-  }
-
-  # Include the pre/post rules and ensure that the pre
-  # rules always run before the post rules to prevent
-  # us from being locked out of the system.
-  Firewall {
-    require => [Class['base_firewall::pre_ipv4'],
-                Class['base_firewall::pre_ipv6']],
-    before  => [Class['base_firewall::post_ipv4'],
-                Class['base_firewall::post_ipv6']],
   }
 
   # Purge any firewall rules not managed by Puppet.
